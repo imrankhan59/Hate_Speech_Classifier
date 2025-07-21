@@ -3,7 +3,7 @@ import sys
 
 from zipfile import ZipFile
 from src.logger import logging
-from src.exception import CustomexcEption
+from src.exception import CustomException
 from src.configuration.gcloud_syncer import GCloudSyncer
 from src.entity.artifact_entity import DataIngestionArtifact
 from src.entity.config_entity import DataIngestionConfig
@@ -28,7 +28,7 @@ class DataIngestion:
             logging.info("Data downloaded successfully from GCP bucket")
 
         except Exception as e:
-            raise CustomexcEption(e, sys) from e
+            raise CustomException(e, sys) from e
     
     def unzip(self):
         logging.info("Entering the unzip method inside DataIngestion class")
@@ -40,7 +40,7 @@ class DataIngestion:
 
             return self.data_ingestion_config.IMBALANCE_ARTIFACT_DIR, self.data_ingestion_config.RAW_ARTIFACT_DIR
         except Exception as e:
-            raise CustomexcEption(e, sys)
+            raise CustomException(e, sys)
         
 
     def initiate_data_ingestion(self) -> DataIngestionArtifact:
@@ -61,7 +61,7 @@ class DataIngestion:
 
             return data_ingestion_artifact
         except Exception as e:
-            raise CustomexcEption(e, sys) from e
+            raise CustomException(e, sys) from e
         
 
 if __name__ == "__main__":

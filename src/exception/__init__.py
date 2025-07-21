@@ -2,7 +2,7 @@ import sys
 from src.logger import logging
 
 
-class CustomexcEption(Exception):
+class CustomException(Exception):
 
     def __init__(self,error_message,error_detail:sys):
         self.error_message=error_message

@@ -11,3 +11,9 @@ TWEET = "tweet"  # column name
 DATA_INGESTION_ARTIFACTS = "DataIngestionArtifacts"
 DATA_INGESTION_IMBALANCE_DATA_DIR = "imbalanced_data.CSV"
 DATA_INGESTON_RAW_DATA_DIR = "raw_data.csv"
+
+
+# Data Validation Constants
+DATA_VALIDATION_ARTIFACTS = "DataValidationArtifacts"
+DATA_VALIDATION_REPORT_FILE_NAME = "data_validation_report.yaml"
+DATA_VALIDATION_SCHEMA_FILE_NAME = "schema.yaml"
