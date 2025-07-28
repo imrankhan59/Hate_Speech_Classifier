@@ -10,3 +10,7 @@ class DataIngestionArtifact:
 @dataclass
 class DataValidationArtifact:
     data_validation_report_file_path: str
+
+@dataclass
+class DataTransformationArtifact:
+    transformed_file_path: str

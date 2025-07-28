@@ -17,3 +17,13 @@ DATA_INGESTON_RAW_DATA_DIR = "raw_data.csv"
 DATA_VALIDATION_ARTIFACTS = "DataValidationArtifacts"
 DATA_VALIDATION_REPORT_FILE_NAME = "data_validation_report.yaml"
 DATA_VALIDATION_SCHEMA_FILE_NAME = "schema.yaml"
+
+# Data Transformation Constants
+DATA_TRANSFORMATION_ARTIFACTS = "DataTransformationArtifacts"
+TRANSFORMED_FILE_NAME = "transformed_data.csv"
+DATA_DIR = "data"
+ID = "id"
+AXIS = 1
+INPLACE = True
+DROP_COLUMN = ['Unnamed: 0', 'count', 'hate_speech', 'offensive_language', 'neither']
+CLASS = "class"

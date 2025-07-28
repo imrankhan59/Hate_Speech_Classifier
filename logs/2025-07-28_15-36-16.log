@@ -1,0 +1,31 @@
+[2025-07-28 15:36:18,611]   72  root - INFO  Entered the run_pipeline method of Training Pipeline
+[2025-07-28 15:36:18,611]   23  root - INFO  Entered the start_data_ingestion method of Training Pipeline
+[2025-07-28 15:36:18,612]   25  root - INFO  Getting the data from GCP
+[2025-07-28 15:36:18,613]   47  root - INFO  Entered the initiate_data_ingestion method inside DataIngestion class
+[2025-07-28 15:36:18,613]   50  root - INFO  Data Fetched from GCP
+[2025-07-28 15:36:18,613]   34  root - INFO  Entering the unzip method inside DataIngestion class
+[2025-07-28 15:36:18,748]   39  root - INFO  Unzipped the file successfully
+[2025-07-28 15:36:18,749]   53  root - INFO  Unziped file
+[2025-07-28 15:36:18,749]   60  root - INFO  Data Ingestion artifacts : DataIngestionArtifact(imbalance_data_file_path='F:\\NLP_End_to_End\\artifacts\\DataIngestionArtifacts\\imbalanced_data.CSV', raw_data_file_path='F:\\NLP_End_to_End\\artifacts\\DataIngestionArtifacts\\raw_data.csv')
+[2025-07-28 15:36:18,750]   30  root - INFO  Data ingestion completed successfully
+[2025-07-28 15:36:18,750]   31  root - INFO  Exited start_data_ingestion method of Training Pipeline
+[2025-07-28 15:36:18,750]   75  root - INFO  Data Ingestion Artifact: DataIngestionArtifact(imbalance_data_file_path='F:\\NLP_End_to_End\\artifacts\\DataIngestionArtifacts\\imbalanced_data.CSV', raw_data_file_path='F:\\NLP_End_to_End\\artifacts\\DataIngestionArtifacts\\raw_data.csv')
+[2025-07-28 15:36:18,750]   38  root - INFO  Entered the start_data_validation method of Training Pipeline
+[2025-07-28 15:36:18,750]   27  root - INFO  starting data validation
+[2025-07-28 15:36:18,750]   28  root - INFO  loading data from ingestion artifact
+[2025-07-28 15:36:19,107]   35  root - INFO  data loaded successfully
+[2025-07-28 15:36:19,120]   42  root - INFO  schema file loaded successfully
+[2025-07-28 15:36:19,120]   22  root - INFO  Column names match for imbalance_data.
+[2025-07-28 15:36:19,120]   22  root - INFO  Column names match for raw_data.
+[2025-07-28 15:36:19,120]   47  root - INFO  Imbalance data validation status: True
+[2025-07-28 15:36:19,120]   48  root - INFO  Raw data validation status: True
+[2025-07-28 15:36:19,124]   47  root - INFO  Data validation completed successfully
+[2025-07-28 15:36:19,124]   48  root - INFO  Exited start_data_validation method of Training Pipeline
+[2025-07-28 15:36:19,124]   77  root - INFO  Data Validation Artifact: DataValidationArtifact(data_validation_report_file_path='F:\\NLP_End_to_End\\artifacts\\DataValidationArtifacts\\data_validation_report.yaml')
+[2025-07-28 15:36:19,124]   57  root - INFO  Entered the start_data_transformation method of Training Pipeline
+[2025-07-28 15:36:19,125]   84  root - INFO  initiate_data_transformation method started
+[2025-07-28 15:36:19,127]   91  root - INFO  Data validation status True
+[2025-07-28 15:36:19,127]   93  root - INFO  Data validation passed. Proceeding with data transformation.
+[2025-07-28 15:36:19,127]   28  root - INFO  reading imbalance data from file paths
+[2025-07-28 15:36:19,206]   30  root - INFO  data read successfully
+[2025-07-28 15:36:19,220]   88  root - INFO  Exited run_pipeline method of Training Pipeline
