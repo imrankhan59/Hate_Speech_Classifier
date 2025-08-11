@@ -14,3 +14,9 @@ class DataValidationArtifact:
 @dataclass
 class DataTransformationArtifact:
     transformed_file_path: str
+
+@dataclass
+class ModelTrainerArtifact:
+    train_model_path: str
+    x_test_path: str
+    y_test_path: str

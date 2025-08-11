@@ -6,8 +6,7 @@ schemas:
       tweet: "object"
       
   raw_data:
-    columns:
-      'Unnamed: 0' : "int64"  # This column is often an index column in pandas
+    columns:  
       count: "int64"
       hate_speech: "int64"  # Changed from "integer" to match pandas dtype
       offensive_language: "int64"

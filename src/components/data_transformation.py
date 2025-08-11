@@ -26,14 +26,15 @@ class DataTransformation:
 
     def imbalance_data_cleaning(self, imbalance_data_file_path: str) -> pd.DataFrame:
         try:
-            logging.info("reading imbalance data from file paths")
+            logging.info(f"reading imbalance data from file paths {imbalance_data_file_path}")
             imbalance_data = pd.read_csv(imbalance_data_file_path)
             logging.info("data read successfully")
 
-            imbalance_data = imbalance_data.drop(columns=self.data_transformation_config.ID, axis=self.data_transformation_config.AXIS, 
+            imbalance_data.drop(columns=self.data_transformation_config.ID, axis=self.data_transformation_config.AXIS, 
                                                  inplace=self.data_transformation_config.INPLACE)
+            
             #logging.info(f"dropped ID column from imbalance data : data shape {imbalance_data.columns}")
-            logging.info(f"exited the imbalance data cleaning method with data shape.")
+            logging.info(f"exited the imbalance data cleaning method with data shape {imbalance_data.columns}")
             return imbalance_data
         except Exception as e:
             raise CustomException(e, sys)
@@ -42,68 +43,54 @@ class DataTransformation:
         try:
             logging.info("reading raw data from file paths")
             raw_data = pd.read_csv(raw_data_file_path)
-            logging.info("raw data read successfully")
+            logging.info(f"raw data read successfully columns are {raw_data.columns}")
             raw_data.drop(self.data_transformation_config.DROP_COLUMN, 
-                          axis=self.data_transformation_config.AXIS, inplace=self.data_transformation_config.INPLACE)
+                          axis = self.data_transformation_config.AXIS, inplace = self.data_transformation_config.INPLACE)
             
-
             logging.info(f"dropped columns {self.data_transformation_config.DROP_COLUMN} from raw data : data shape {raw_data.columns}")
             logging.info(f"removed null values from raw data : data shape {raw_data.columns}") 
 
-            raw_data[self.data_transformation_config.CLASS].replace({0:1}, inplace=True)
-            raw_data[self.data_transformation_config.CLASS].replace({2:0}, inplace=True)
+            #raw_data[self.data_transformation_config.CLASS].replace({0:1}, inplace=True)
+            #raw_data[self.data_transformation_config.CLASS].replace({2:0}, inplace=True)
+
+            raw_data[self.data_transformation_config.CLASS] = raw_data[self.data_transformation_config.CLASS].replace({0:1})
+            raw_data[self.data_transformation_config.CLASS] = raw_data[self.data_transformation_config.CLASS].replace({2:0})
 
             logging.info(f"raw_data classes {raw_data[self.data_transformation_config.CLASS].unique()}")
 
-            raw_data.rename(columns={self.data_transformation_config.CLASS: self.data_transformation_config.LABEL})
+            raw_data.rename(columns={self.data_transformation_config.CLASS: self.data_transformation_config.LABEL}, inplace = True)
 
-            logging.info(f"renamed class column to {self.data_transformation_config.LABEL} in raw data : data shape {raw_data.columns}")
+            logging.info(f"raw_data columns are now changes to {raw_data.columns}")
 
             return raw_data
         except Exception as e:
             raise CustomException(e, sys)
         
-    def text_cleaning(self, text: str) -> str:
+    def text_cleaning(self, words: str) -> str:
         try:
-            # Lowercase
-            text = str(text).lower()
-
-            # Remove URLs
-            text = re.sub(r'https?://\S+|www\.\S+', '', text)
-
-            # Remove HTML tags
-            text = re.sub(r'<.*?>+', '', text)
-
-            # Remove punctuation
-            text = re.sub(f'[{re.escape(string.punctuation)}]', '', text)
-
-            # Remove newlines
-            text = re.sub(r'\n', ' ', text)
-
-            # Remove words with numbers
-            text = re.sub(r'\w*\d\w*', '', text)
-
-            # Remove extra spaces
-            text = re.sub(r'\s+', ' ', text).strip()
-
-            # Tokenize
-            words = text.split()
-
-            # Remove stopwords
-            words = [w for w in words if w not in stopword]
-
-            # Stemming
-            words = [stemmer.stem(w) for w in words]
-
-            return " ".join(words)
-
-            logging.info(f"Exited the data_cleaning method: {words}")
+            if pd.isna(words):
+                return ""
+            words = str(words).lower()
+            words = re.sub('', '', words)
+            words = re.sub(r'\d+', '', words)
+            words = re.sub('https?://\S+|www\.\S+', '', words)
+            words = re.sub('<.*?>+', '', words)
+            words = re.sub('[%s]' % re.escape(string.punctuation), '', words)
+            words = re.sub('\n', '', words)
+            words = re.sub('\w*\d\w*', '', words)
+            words = [w for w in words.split(' ') if w not in stopword]
+            words = " ".join(words)
+            words = [stemmer.stem(w) for w in words.split(' ')]
+            words = " ".join(words)
+            return words
         except Exception as e:
-            raise CustomException(e, sys)
+                raise CustomException(e, sys)
     
     def initiate_data_transformation(self) -> DataTransformationArtifact:
         try:
             logging.info("initiate_data_transformation method started")
+            os.makedirs(self.data_transformation_config.DATA_TRANSFORMATION_ARTIFACT_DIR, exist_ok=True)
+            
             data_validation_report_file = self.data_validation_artifact.data_validation_report_file_path
             with open(data_validation_report_file, 'r') as file:
                 report = yaml.safe_load(file)
@@ -119,14 +106,26 @@ class DataTransformation:
             imbalance_data = self.imbalance_data_cleaning(imbalance_data_file_path)
             raw_data = self.raw_data_cleaning(raw_data_file_path)
 
+            logging.info("______________________________________________________________")
+
+            logging.info(f"raw_data columns are {raw_data.columns}")
+
             logging.info("cleaned imbalance and raw data successfully")
 
             df = pd.concat([imbalance_data, raw_data])
+
+            logging.info(f"new dataframe columns are \n {df.columns}")
+
+            df['tweet']=df['tweet'].fillna('')
+
+            logging.info(f"DataFrame : {df.head(1)}")
             
             df[self.data_transformation_config.TWEET] = df[self.data_transformation_config.TWEET].apply(self.text_cleaning)
 
-            os.makedirs(self.data_transformation_config.DATA_TRANSFORMATION_ARTIFACT_DIR, exist_ok=True)
-            df.to_csv(self.data_transformation_config.TRANSFORMED_FILE_PATH)
+            logging.info(f"df columns after applying text_cleaning method {df.columns} ")
+            logging.info(f"df look like \n {df.head}")
+
+            df.to_csv(self.data_transformation_config.TRANSFORMED_FILE_PATH, index = False)
 
             logging.info(f"transformed data saved at {self.data_transformation_config.TRANSFORMED_FILE_PATH}")
 
