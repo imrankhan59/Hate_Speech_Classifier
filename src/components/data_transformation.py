@@ -132,8 +132,8 @@ class DataTransformation:
             data_transformation_artifact = DataTransformationArtifact(
                 transformed_file_path = self.data_transformation_config.TRANSFORMED_FILE_PATH,
             )
-
-            return data_transformation_artifact
             logging.info(f"concatenated imbalance and raw data : data shape {df.shape}")
+            return data_transformation_artifact
+            
         except Exception as e:
             raise CustomException(e, sys)

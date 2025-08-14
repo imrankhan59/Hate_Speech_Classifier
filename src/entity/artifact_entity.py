@@ -2,6 +2,8 @@ import os
 from pathlib import Path
 from dataclasses import dataclass
 
+from src.constant import BUCKET_NAME
+
 @dataclass
 class DataIngestionArtifact:
     imbalance_data_file_path: str
@@ -20,3 +22,13 @@ class ModelTrainerArtifact:
     train_model_path: str
     x_test_path: str
     y_test_path: str
+
+
+@dataclass
+class ModelEvaluationArtifact:
+    is_model_accepted: bool
+
+
+@dataclass
+class ModelPusherArtifact:
+    bucket_name : str
