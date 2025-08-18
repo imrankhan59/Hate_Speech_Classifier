@@ -4,4 +4,5 @@ stages:
     deps:
       - src/components/data_ingestion.py
     outs:
-      - artifacts/DataIngestionArtifacts
+      - artifacts/DataIngestionArtifacts\raw_data.csv
+      - artifacts/DataIngestionArtifacts\imb_data.csv

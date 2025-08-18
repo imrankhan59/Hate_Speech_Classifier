@@ -37,6 +37,9 @@ class DataIngestion:
             raw_data = pd.read_csv(RAW_DATA_PATH)
             imb_data = pd.read_csv(IMB_DATA_PATH)
 
+            #raw_data_path = os.path.join(self.data_ingestion_config.DATA_INGESTION_ARTIFACT_DIR, "raw_data.csv")
+            #imb_data_path = os.path.join(self.data_ingestion_config.DATA_INGESTION_ARTIFACT_DIR, "imb_data.csv")
+
             raw_data.to_csv(self.data_ingestion_config.RAW_ARTIFACT_DIR, index = False)
             imb_data.to_csv(self.data_ingestion_config.IMBALANCE_ARTIFACT_DIR, index = False)
 
@@ -68,4 +71,7 @@ class DataIngestion:
         
 
 if __name__ == "__main__":
-    pass
+    data_ingest_config = DataIngestionConfig()
+
+    obj = DataIngestion(data_ingestion_config=data_ingest_config)
+    obj.initiate_data_ingestion()
