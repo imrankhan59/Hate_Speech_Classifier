@@ -1,0 +1,18 @@
+schema: '2.0'
+stages:
+  data_ingestion:
+    cmd: python src/components/data_ingestion.py
+    deps:
+    - path: src/components/data_ingestion.py
+      hash: md5
+      md5: ec3260cb0896978c5090df4f09f6f29c
+      size: 3025
+    outs:
+    - path: artifacts/DataIngestionArtifacts\imb_data.csv
+      hash: md5
+      md5: 50c0df6093dab2487c21954e0df49a3d
+      size: 3135128
+    - path: artifacts/DataIngestionArtifacts\raw_data.csv
+      hash: md5
+      md5: b037c87e7281dfc871523fcf179bbcee
+      size: 2433325
