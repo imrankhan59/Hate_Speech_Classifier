@@ -5,7 +5,8 @@ import numpy as np
 import pandas as pd
 from src.logger import logging
 from src.exception import CustomException
-from src.entity.config_entity import DataValidationConfig
+from src.components.data_ingestion import DataIngestion
+from src.entity.config_entity import DataValidationConfig, DataIngestionConfig
 from src.entity.artifact_entity import DataIngestionArtifact, DataValidationArtifact
 
 class DataValidation:
@@ -62,3 +63,17 @@ class DataValidation:
             return data_validation_artifact
         except Exception as e:
             raise CustomException(e, sys)
+        
+
+if __name__ == "__main__":
+    data_ingestion_config = DataIngestionConfig()
+    data_validation_config = DataValidationConfig()
+
+    data_ingestion = DataIngestion(data_ingestion_config=data_ingestion_config)
+    data_ingestion_artifact = data_ingestion.initiate_data_ingestion()
+
+    data_validation = DataValidation(data_ingestion_artifact=data_ingestion_artifact, data_validation_config=data_validation_config)
+    data_validation.initiate_data_validation()
+
+
+

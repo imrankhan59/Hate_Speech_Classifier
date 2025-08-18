@@ -4,5 +4,16 @@ stages:
     deps:
       - src/components/data_ingestion.py
     outs:
-      - artifacts/DataIngestionArtifacts\raw_data.csv
-      - artifacts/DataIngestionArtifacts\imb_data.csv
+      - artifacts/DataIngestionArtifacts/raw_data.csv
+      - artifacts/DataIngestionArtifacts/imb_data.csv
+
+  data_validation:
+    cmd: python src/components/data_validation.py
+    deps:
+      - src/components/data_validation.py
+      - src/components/data_ingestion.py
+      - artifacts/DataIngestionArtifacts/raw_data.csv
+      - artifacts/DataIngestionArtifacts/imb_data.csv
+
+    outs:
+      - artifacts/DataValidationArtifacts/data_validation_report.yaml
