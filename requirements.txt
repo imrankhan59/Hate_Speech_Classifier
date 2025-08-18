@@ -11,4 +11,6 @@ google-cloud-storage
 fastapi
 uvicorn
 Jinja2
+dvc
+mlflow
 -e .

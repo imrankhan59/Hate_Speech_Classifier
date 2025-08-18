@@ -1,6 +1,0 @@
-outs:
-- md5: 6a48e18fc5db2b639a6eadc08f3c818c.dir
-  size: 7797039
-  nfiles: 3
-  hash: md5
-  path: DataIngestionArtifacts

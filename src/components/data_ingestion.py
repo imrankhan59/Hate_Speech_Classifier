@@ -1,7 +1,9 @@
 import os
 import sys
+import pandas as pd
 
 from zipfile import ZipFile
+from src.constant import *
 from src.logger import logging
 from src.exception import CustomException
 from src.configuration.gcloud_syncer import GCloudSyncer
@@ -17,8 +19,6 @@ class DataIngestion:
     def get_data_from_gcp(self) -> None:
         try:
             logging.info("Downloading data form GCP bucket")
-
-            os.makedirs(self.data_ingestion_config.DATA_INGESTION_ARTIFACT_DIR, exist_ok=True)
             self.gcloud.sync_folder_from_gcloud(
                 self.data_ingestion_config.BUCKET_NAME,
                 self.data_ingestion_config.ZIP_FILE_NAME,
@@ -30,13 +30,15 @@ class DataIngestion:
         except Exception as e:
             raise CustomException(e, sys) from e
     
-    def unzip(self):
-        logging.info("Entering the unzip method inside DataIngestion class")
+  
+    def load_data(self):
+        logging.info("Entering the load_data function of DataIngestion class")
         try:
-            with ZipFile(self.data_ingestion_config.ZIP_FILE_PATH, 'r') as zip_file:
-                zip_file.extractall(self.data_ingestion_config.ZIP_FILE_DIR)
+            raw_data = pd.read_csv(RAW_DATA_PATH)
+            imb_data = pd.read_csv(IMB_DATA_PATH)
 
-                logging.info("Unzipped the file successfully")
+            raw_data.to_csv(self.data_ingestion_config.RAW_ARTIFACT_DIR, index = False)
+            imb_data.to_csv(self.data_ingestion_config.IMBALANCE_ARTIFACT_DIR, index = False)
 
             return self.data_ingestion_config.IMBALANCE_ARTIFACT_DIR, self.data_ingestion_config.RAW_ARTIFACT_DIR
         except Exception as e:
@@ -49,8 +51,9 @@ class DataIngestion:
             #self.get_data_from_gcp()
             logging.info("Data Fetched from GCP")
 
-            imbalance_data_path, raw_data_path = self.unzip()
-            logging.info("Unziped file")
+
+            imbalance_data_path, raw_data_path = self.load_data()
+            logging.info("data loaded and path are returned")
 
             data_ingestion_artifact = DataIngestionArtifact(
                 imbalance_data_file_path = imbalance_data_path,
