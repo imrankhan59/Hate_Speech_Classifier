@@ -9,8 +9,12 @@ from nltk.corpus import stopwords
 from sklearn.model_selection import train_test_split
 from src.logger import logging
 from src.exception import CustomException
-from src.entity.config_entity import DataTransformationConfig
+
+from src.entity.config_entity import DataTransformationConfig, DataIngestionConfig, DataValidationConfig
 from src.entity.artifact_entity import DataIngestionArtifact, DataValidationArtifact, DataTransformationArtifact
+from src.components.data_ingestion import DataIngestion
+from src.components.data_validation import DataValidation
+
 
 stemmer = nltk.SnowballStemmer("english")
 nltk.download('stopwords')
@@ -137,3 +141,17 @@ class DataTransformation:
             
         except Exception as e:
             raise CustomException(e, sys)
+
+if __name__ == "__main__":
+    data_ingestion_config = DataIngestionConfig()
+    data_validation_config = DataValidationConfig()
+    data_transformation_config = DataTransformationConfig()
+
+    data_ingestion = DataIngestion(data_ingestion_config=data_ingestion_config)
+    data_ingestion_artifact = data_ingestion.initiate_data_ingestion()
+
+    data_validation = DataValidation(data_ingestion_artifact=data_ingestion_artifact, data_validation_config=data_validation_config)
+    data_validation_artifact = data_validation.initiate_data_validation()
+
+    data_transformation = DataTransformation(data_ingestion_artifact = data_ingestion_artifact, data_validation_artifact = data_validation_artifact, data_transformation_config = data_transformation_config)
+    data_transformation.initiate_data_transformation()
