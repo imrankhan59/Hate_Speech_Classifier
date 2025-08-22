@@ -2,6 +2,8 @@ import os
 import sys
 import pandas as pd
 import pickle
+import mlflow
+import mlflow.keras
 
 from src.constant import *
 from src.exception import CustomException
@@ -13,9 +15,13 @@ import tensorflow
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 
-from src.entity.config_entity import ModelTrainerConfig
+from src.entity.config_entity import ModelTrainerConfig, DataTransformationConfig, DataIngestionConfig, DataValidationConfig
 from src.entity.artifact_entity import ModelTrainerArtifact, DataTransformationArtifact
+from src.components.data_ingestion import DataIngestion
+from src.components.data_validation import DataValidation
+from src.components.data_transformation import DataTransformation
 from src.ml.model import ModelArchitecture
+from src.utils.utils import setup_mlflow
 
 class ModelTrainer:
     def __init__(self, data_transformation_artifact: DataTransformationArtifact,
@@ -106,22 +112,37 @@ class ModelTrainer:
             model_architectue = ModelArchitecture()
             model = model_architectue.get_model()
 
-            logging.info("Entered into model training")
+            logging.info("Starting MLflow run...")
+            setup_mlflow()
 
-            model.fit(padded_sequence, Y_train, epochs = EPOCH, batch_size = BATCH_SIZE, validation_split = VALIDATION_SPLIT)
-            logging.info("Model training finished:")
+            mlflow.set_experiment("NLP Pipeline")
 
-            with open('tokenizer.pickle', 'wb') as handle:
-                pickle.dump(tokenizer, handle, protocol = pickle.HIGHEST_PROTOCOL)
+            with mlflow.start_run(run_name = "model trianer" , nested=True):
 
-            logging.info("Saving the model:")
-            model.save(self.model_trainer_config.TRAINED_MODEL_PATH)
+            # Log hyperparameters
+                mlflow.log_param("epochs", EPOCH)
+                mlflow.log_param("batch_size", BATCH_SIZE)
+                mlflow.log_param("max_words", self.model_trainer_config.MAX_WORDS)
+                mlflow.log_param("max_len", MAX_LEN)
 
-            logging.info("saving X_test and Y_test")
-            X_test.to_csv(self.model_trainer_config.X_TEST_DATA_PATH)
-            Y_test.to_csv(self.model_trainer_config.Y_TEST_DATA_PATH)
+                logging.info("Entered into model training")
 
-            X_train.to_csv(self.model_trainer_config.X_TRAIN_DATA_PATH)
+                model.fit(padded_sequence, Y_train, epochs = EPOCH, batch_size = BATCH_SIZE, validation_split = VALIDATION_SPLIT)
+                logging.info("Model training finished:")
+
+                with open('tokenizer.pickle', 'wb') as handle:
+                    pickle.dump(tokenizer, handle, protocol = pickle.HIGHEST_PROTOCOL)
+
+                logging.info("Saving the model:")
+                model.save(self.model_trainer_config.TRAINED_MODEL_PATH)
+
+                logging.info("saving X_test and Y_test")
+                X_test.to_csv(self.model_trainer_config.X_TEST_DATA_PATH)
+                Y_test.to_csv(self.model_trainer_config.Y_TEST_DATA_PATH)
+
+                X_train.to_csv(self.model_trainer_config.X_TRAIN_DATA_PATH)
+
+            logging.info("Mlflow logging completed")
 
             model_trainer_artifacts = ModelTrainerArtifact(
                 train_model_path = self.model_trainer_config.TRAINED_MODEL_PATH,
@@ -132,3 +153,23 @@ class ModelTrainer:
             return model_trainer_artifacts
         except Exception as e:
             raise CustomException(e, sys)
+        
+
+if __name__ == "__main__":
+
+    data_ingestion_config = DataIngestionConfig()
+    data_validation_config = DataValidationConfig()
+    data_transformation_config = DataTransformationConfig()
+    model_trainer_config = ModelTrainerConfig()
+
+    data_ingestion = DataIngestion(data_ingestion_config=data_ingestion_config)
+    data_ingestion_artifact = data_ingestion.initiate_data_ingestion()
+
+    data_validation = DataValidation(data_ingestion_artifact=data_ingestion_artifact, data_validation_config=data_validation_config)
+    data_validation_artifact = data_validation.initiate_data_validation()
+
+    data_transformation = DataTransformation(data_ingestion_artifact = data_ingestion_artifact, data_validation_artifact = data_validation_artifact, data_transformation_config = data_transformation_config)
+    data_transformation_artifact = data_transformation.initiate_data_transformation()
+
+    model_trainer = ModelTrainer(data_transformation_artifact = data_transformation_artifact, model_trainer_config = model_trainer_config)
+    model_trainer.initiate_model_trainer()

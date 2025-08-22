@@ -11,7 +11,6 @@ stages:
     cmd: python src/components/data_validation.py
     deps:
       - src/components/data_validation.py
-      - src/components/data_ingestion.py
       - artifacts/DataIngestionArtifacts/raw_data.csv
       - artifacts/DataIngestionArtifacts/imb_data.csv
 
@@ -22,11 +21,23 @@ stages:
     cmd: python src/components/data_transformation.py
     deps:
      - src/components/data_transformation.py
-     - src/components/data_validation.py
-     - src/components/data_ingestion.py
      - artifacts/DataIngestionArtifacts/raw_data.csv
      - artifacts/DataIngestionArtifacts/imb_data.csv
      - artifacts/DataValidationArtifacts/data_validation_report.yaml
 
     outs:
      - artifacts\DataTransformationArtifacts\transformed_data.csv
+
+  
+  model_trainer:
+    cmd: python src/components/model_trainer.py
+    deps:
+      - src/components/model_trainer.py
+      - artifacts/DataTransformationArtifacts/transformed_data.csv
+    
+    outs:
+      - artifacts/ModelTrainerArtifacts/model.h5
+      - artifacts/ModelTrainerArtifacts/x_test.csv
+      - artifacts/ModelTrainerArtifacts/x_train.csv
+      - artifacts/ModelTrainerArtifacts/y_test.csv
+      - tokenizer.pickle

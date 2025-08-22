@@ -79,18 +79,14 @@ stages:
       hash: md5
       md5: d1a0d2e5e08af421162b17d7f22af658
       size: 3469555
-    - path: src/components/data_transformation.py
-      hash: md5
-      md5: 14bde816a3065ba7d4a3a4eb4220de1c
-      size: 7992
     - path: src/components/model_trainer.py
       hash: md5
-      md5: d8ae9f9eeb5544497f6d5362715eb388
-      size: 7326
+      md5: bbeb95152c2e58ffdfad091c3f068090
+      size: 8005
     outs:
     - path: artifacts/ModelTrainerArtifacts/model.h5
       hash: md5
-      md5: 9a72b11ad95312d795c4f6f6dc40d998
+      md5: 402e8fa046169f7dc4f3a1b5a8fade9c
       size: 52686488
     - path: artifacts/ModelTrainerArtifacts/x_test.csv
       hash: md5
@@ -106,5 +102,5 @@ stages:
       size: 99887
     - path: tokenizer.pickle
       hash: md5
-      md5: d9b1c7c946e816f525e66dfafd17b5d6
+      md5: dd65dcc042371014744ce1d1ef15e585
       size: 2249923
