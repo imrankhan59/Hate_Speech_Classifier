@@ -40,6 +40,7 @@ class ModelTrainerConfig:
     Y_TEST_DATA_PATH = os.path.join(MODEL_TRAINER_ARTIFACTS_DIR, Y_TEST_FILE_NAME)
     X_TRAIN_DATA_PATH = os.path.join(MODEL_TRAINER_ARTIFACTS_DIR, X_TRAIN_FILE_NAME)
 
+    """ 
     MAX_WORDS = MAX_WORD
     MAX_LEN = MAX_LEN
     LOSS = LOSS
@@ -51,6 +52,7 @@ class ModelTrainerConfig:
     EPOCH = EPOCH
     BATCH_SIZE = BATCH_SIZE
     VALIDATION_SPLIT = VALIDATION_SPLIT
+    """
 
 @dataclass 
 class ModelEvaluationConfig:

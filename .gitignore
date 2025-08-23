@@ -1,7 +1,7 @@
 myenv
+mlruns
+mlartifacts
 artifacts/*
 !artifacts/*.dvc
 logs
-
-# https://drive.google.com/drive/folders/1BBN2F2KE0JZu72YOz2WgLYVXGnKw202X?usp=drive_link
 /tokenizer.pickle

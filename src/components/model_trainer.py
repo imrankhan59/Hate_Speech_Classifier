@@ -4,6 +4,7 @@ import pandas as pd
 import pickle
 import mlflow
 import mlflow.keras
+from mlflow.tracking import MlflowClient
 
 from src.constant import *
 from src.exception import CustomException
@@ -44,7 +45,7 @@ class ModelTrainer:
             y = df[LABEL]
 
             logging.info("Applying train_test_split on the data")
-            X_train, X_test, Y_train, Y_test = train_test_split(x, y, test_size = 0.2, random_state = RANDOM_STATE)
+            X_train, X_test, Y_train, Y_test = train_test_split(x, y, test_size = TEST_SIZE, random_state = RANDOM_STATE)
 
             logging.info(":::-------------------------------------------------------------->")
 
@@ -59,7 +60,7 @@ class ModelTrainer:
     def tokanizing(self, X_train):
         try:
             logging.info("Entered tokenization method applying on the data:")
-            tokenizer = Tokenizer(num_words = self.model_trainer_config.MAX_WORDS , oov_token="<OOV>")
+            tokenizer = Tokenizer(num_words = MAX_WORD , oov_token="<OOV>")
             X_train = X_train.fillna("").astype(str)
             tokenizer.fit_on_texts(X_train)
             train_sequences = tokenizer.texts_to_sequences(X_train)
@@ -117,18 +118,35 @@ class ModelTrainer:
 
             mlflow.set_experiment("NLP Pipeline")
 
-            with mlflow.start_run(run_name = "model trianer" , nested=True):
+            with mlflow.start_run(run_name = "model trainer" , nested=True) as run:
+                run_id = run.info.run_id
+                logging.info(f"MLflow run_id: {run_id}")
 
             # Log hyperparameters
+                mlflow.log_param("test_size", TEST_SIZE)
+                mlflow.log_param("random_state", RANDOM_STATE)
                 mlflow.log_param("epochs", EPOCH)
                 mlflow.log_param("batch_size", BATCH_SIZE)
-                mlflow.log_param("max_words", self.model_trainer_config.MAX_WORDS)
+                mlflow.log_param("max_words", MAX_WORD)
                 mlflow.log_param("max_len", MAX_LEN)
 
                 logging.info("Entered into model training")
 
-                model.fit(padded_sequence, Y_train, epochs = EPOCH, batch_size = BATCH_SIZE, validation_split = VALIDATION_SPLIT)
+                history = model.fit(padded_sequence, Y_train, epochs = EPOCH, batch_size = BATCH_SIZE, validation_split = VALIDATION_SPLIT)
                 logging.info("Model training finished:")
+
+                mlflow.keras.log_model(model, artifact_path="model")
+
+                last_run_id_file = os.path.join(self.model_trainer_config.MODEL_TRAINER_ARTIFACTS_DIR, "last_run_id.txt")
+                with open(last_run_id_file, "w") as f:
+                    f.write(run_id)
+                mlflow.log_artifact(last_run_id_file, artifact_path="artifacts")
+
+                for epoch in range(EPOCH):
+                    mlflow.log_metric("train_loss", history.history["loss"][epoch])
+                    mlflow.log_metric("train_accuracy", history.history["accuracy"][epoch])
+                    mlflow.log_metric("val_loss", history.history["val_loss"][epoch])
+                    mlflow.log_metric("val_accuracy", history.history["val_accuracy"][epoch])
 
                 with open('tokenizer.pickle', 'wb') as handle:
                     pickle.dump(tokenizer, handle, protocol = pickle.HIGHEST_PROTOCOL)

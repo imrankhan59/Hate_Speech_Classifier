@@ -38,10 +38,10 @@ TRAINED_MODEL_DIR = "trained_model"
 TRAINED_MODEL_NAME = "model.h5"
 X_TEST_FILE_NAME = "x_test.csv"
 Y_TEST_FILE_NAME = "y_test.csv"
-
 X_TRAIN_FILE_NAME = "x_train.csv"
 
 RANDOM_STATE = 42
+TEST_SIZE = 0.2
 EPOCH = 1
 BATCH_SIZE = 128
 VALIDATION_SPLIT = 0.2
