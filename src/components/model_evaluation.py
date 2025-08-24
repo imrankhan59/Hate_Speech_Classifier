@@ -4,42 +4,36 @@ import pickle
 import numpy as np
 import pandas as pd
 import keras
+import mlflow
+import mlflow.keras
+from mlflow.tracking import MlflowClient
+from mlflow.exceptions import RestException
 
 from src.logger import logging
 from src.exception import CustomException
-from src.entity.config_entity import ModelEvaluationConfig
-from src.entity.artifact_entity import ModelEvaluationArtifact, ModelTrainerArtifact, DataTransformationArtifact
+from src.entity.config_entity import DataIngestionConfig, DataValidationConfig, DataTransformationConfig, ModelEvaluationConfig, ModelTrainerConfig
+from src.entity.artifact_entity import DataIngestionArtifact, DataValidationArtifact, DataTransformationArtifact, ModelEvaluationArtifact, ModelTrainerArtifact
 from src.configuration.gcloud_syncer import GCloudSyncer
 from src.constant import *
+from src.ml import model
+from src.utils.utils import setup_mlflow
+
+from src.components.data_ingestion import DataIngestion
+from src.components.data_validation import DataValidation
+from src.components.data_transformation import DataTransformation
+from src.components.model_trainer import ModelTrainer
 
 from sklearn.metrics import confusion_matrix
 from keras.utils import pad_sequences
+from sklearn.metrics import precision_score, recall_score, f1_score, classification_report, roc_auc_score
+
 
 class ModelEvaluation:
     def __init__(self, model_evaluation_config: ModelEvaluationConfig,
-                 model_trainer_artifacts: ModelTrainerArtifact,
-                 data_transformation_artifact: DataTransformationArtifact):
+                 model_trainer_artifacts: ModelTrainerArtifact):
         self.model_evaluation_config = model_evaluation_config
         self.model_trainer_artifacts = model_trainer_artifacts
-        self.data_transformation_artifacts = data_transformation_artifact
-        self.gcloud = GCloudSyncer()
 
-
-    def get_best_model_from_gcloud(self) ->str:
-        try:
-            logging.info("Entered the get_best_model_from_gcloud method of model Evaluation class")
-            os.makedirs(self.model_evaluation_config.BEST_MODEL_PATH_DIR)
-            self.gcloud.sync_folder_from_gcloud(self.model_evaluation_config.BUCKET_NAME,
-                                                self.model_evaluation_config.MODEL_NAME,
-                                                self.model_evaluation_config.BEST_MODEL_PATH_DIR)
-            
-            best_model_path = os.path.join(self.model_evaluation_config.BEST_MODEL_PATH_DIR, self.model_evaluation_config.MODEL_NAME)
-            logging.info("Exited get_best_model_from_gcloud method of ModelEvaluation class")
-
-            return best_model_path
-        
-        except Exception as e:
-            raise CustomException(e, sys)
         
     def evaluation(self, model, tokenizer):
         try:
@@ -59,7 +53,7 @@ class ModelEvaluation:
 
             loss, accuracy = model.evaluate(test_sequences_padded, y_test)
 
-            logging.info(f"the test accuracy is {accuracy} and {loss}")
+            logging.info(f"the test accuracy is {accuracy} and Loss {loss}")
 
             lstm_prediction = model.predict(test_sequences_padded)
 
@@ -71,10 +65,25 @@ class ModelEvaluation:
                 else:
                     res.append(1)
 
-            print(confusion_matrix(y_test, res))
-            logging.info(f"confusion matrix is {confusion_matrix(y_test, res)}")
+            conf_matrix = confusion_matrix(y_test, res)
+            logging.info(f"confusion matrix is {confusion_matrix(y_test, res)}\n")
 
-            return accuracy
+            precision = precision_score(y_test, res)
+            recall = recall_score(y_test, res)
+            f1 = f1_score(y_test, res)
+            auc = roc_auc_score(y_test, lstm_prediction)
+
+            logging.info(f"Precision: {precision}, Recall: {recall}, F1: {f1}, AUC: {auc} \n")
+            logging.info(f"\nClassification Report:\n{classification_report(y_test, res)}")
+
+            return {
+            "accuracy": accuracy,
+            "loss": loss,
+            "precision": precision,
+            "recall": recall,
+            "f1_score": f1,
+            "auc": auc
+            }
 
         except Exception as e:
             raise CustomException(e, sys)
@@ -84,39 +93,112 @@ class ModelEvaluation:
         try:
             logging.info("Entering initiate_Model_Evaluation method of ModelEvaluation Class")
             logging.info("Loading current trained Model")
+            logging.info("Starting MLflow run...")
+            setup_mlflow()
 
-            trained_model = keras.models.load_model(self.model_trainer_artifacts.train_model_path)
+            with mlflow.start_run(run_name = "model evauation" , nested=True) as run:
 
-            with open('tokenizer.pickle', 'rb') as f:
-                tokenizer = pickle.load(f)
+                #trained_model = keras.models.load_model(self.model_trainer_artifacts.train_model_path)
+                os.makedirs(self.model_evaluation_config.BEST_MODEL_PATH_DIR, exist_ok=True)
 
-            trained_model_accuracy = self.evaluation(trained_model, tokenizer)
-            logging.info(f"Trained Model accuracy {trained_model_accuracy}")
+                with open("artifacts/ModelTrainerArtifacts/last_run_id.txt", "r") as f:
+                        run_id = f.read().strip()
 
-            logging.info("fetching best model from gcloud syncer")
-            #best_model_path = self.get_best_model_from_gcloud()
-            best_model_path = ""
+                logging.info(f"Loading model from mlflow model_uri {run_id}")
 
-            logging.info("Check is best model present in the gcloud storage or not")
-            if os.path.isfile(best_model_path) is False:
+                logged_model_uri = f"runs:/{run_id}/model"
+                trained_model = mlflow.keras.load_model(logged_model_uri)
+
+                with open('tokenizer.pickle', 'rb') as f:
+                    tokenizer = pickle.load(f)
+
+                trained_metrices = self.evaluation(trained_model, tokenizer)
+                mlflow.log_metrics(trained_metrices)
+                logging.info(f"Trained Model accuracy {trained_metrices}")
+
+                logging.info("Registering trained model to MLflow Model Registry")
+                model_details = mlflow.register_model(logged_model_uri, "LSTM")
+
+                client = MlflowClient()
+
+                try:
+                    prod_versions = client.get_latest_versions(name=PROD_MODEL_NAME, stages=["Production"])
+                    if len(prod_versions) == 0:
+                        prod_model = None
+                    else:
+                        prod_version = prod_versions[0].version
+                        prod_model_uri = f"models:/{PROD_MODEL_NAME}/Production"
+                        prod_model = mlflow.keras.load_model(prod_model_uri)
+                except RestException as e:
+                    if "RESOURCE_DOES_NOT_EXIST" in str(e):
+                        logging.info("No Production model registered yet.")
+                        prod_model = None
+                    else:
+                         raise e
+
+                # Case 1: No production model yet
+            if prod_model is None:
+                logging.info("Promoting trained model to Production since no Production model exists.")
+                client.transition_model_version_stage(
+                    name=NEW_MODEL_NAME,
+                    version=model_details.version,
+                    stage="Production"
+                )
                 is_model_accepted = True
-                logging.info("gcloud storage model is false and currently trained model accpeted is true")
 
+            # ---------------- Case 2: Production model exists ----------------
             else:
-                logging.info("Load best model fetched from gcloud storage")
-                best_model = keras.models.load_model(best_model_path)
-                best_model_accuracy = self.evaluate(tokenizer, best_model)
+                prod_metrics = self.evaluation(prod_model, tokenizer)
+                logging.info(f"Production Model metrics: {prod_metrics}")
 
-                logging.info("comparing loss between best_model_loss and trained_model_loss ?")
-
-                if best_model_accuracy > trained_model_accuracy:
-                    is_model_accepted = True
-                    logging.info("Trained model not accepted")
+                if trained_metrices["accuracy"] > prod_metrics["accuracy"]:
+                    logging.info("Trained model outperforms Production. Promoting to Production.")
+                    client.transition_model_version_stage(
+                        name=NEW_MODEL_NAME,
+                        version=model_details.version,
+                        stage="Production"
+                    )
+                    # Archive old production version
+                    client.transition_model_version_stage(
+                        name=PROD_MODEL_NAME,
+                        version=prod_version,
+                        stage="Archived"
+                    )
+                    is_model_accepted = True  
                 else:
-                    is_model_accepted = False
-                    logging.info("Trained model accepted")
+                    logging.info("Production model is better. Moving trained model to Staging.")
+                    client.transition_model_version_stage(
+                        name=NEW_MODEL_NAME,
+                        version=model_details.version,
+                        stage="Staging"
+                    )
+                    is_model_accepted = False                                  
 
-            model_evaluation_artifacts = ModelEvaluationArtifact(is_model_accepted = is_model_accepted)
-            return model_evaluation_artifacts
+                model_evaluation_artifacts = ModelEvaluationArtifact(is_model_accepted = is_model_accepted)
+                return model_evaluation_artifacts
         except Exception as e:
             raise CustomException(e, sys)    
+        
+
+if __name__ == "__main__":
+
+    data_ingestion_config = DataIngestionConfig()
+    data_validation_config = DataValidationConfig()
+    data_transformation_config = DataTransformationConfig()
+    model_trainer_config = ModelTrainerConfig()
+    model_evaluation_config = ModelEvaluationConfig()
+
+    data_ingestion = DataIngestion(data_ingestion_config=data_ingestion_config)
+    data_ingestion_artifact = data_ingestion.initiate_data_ingestion()
+
+    data_validation = DataValidation(data_ingestion_artifact=data_ingestion_artifact, data_validation_config=data_validation_config)
+    data_validation_artifact = data_validation.initiate_data_validation()
+
+    data_transformation = DataTransformation(data_ingestion_artifact = data_ingestion_artifact, data_validation_artifact = data_validation_artifact, data_transformation_config = data_transformation_config)
+    data_transformation_artifact = data_transformation.initiate_data_transformation()
+
+    model_trainer = ModelTrainer(data_transformation_artifact = data_transformation_artifact, model_trainer_config = model_trainer_config)
+    model_trainer_artifact = model_trainer.initiate_model_trainer()
+
+    model_evaluation = ModelEvaluation(model_evaluation_config=model_evaluation_config, model_trainer_artifacts=model_trainer_artifact)
+    model_evaluation_artifact = model_evaluation.initiate_model_evaluation()

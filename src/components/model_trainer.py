@@ -116,8 +116,6 @@ class ModelTrainer:
             logging.info("Starting MLflow run...")
             setup_mlflow()
 
-            mlflow.set_experiment("NLP Pipeline")
-
             with mlflow.start_run(run_name = "model trainer" , nested=True) as run:
                 run_id = run.info.run_id
                 logging.info(f"MLflow run_id: {run_id}")
@@ -174,7 +172,6 @@ class ModelTrainer:
         
 
 if __name__ == "__main__":
-
     data_ingestion_config = DataIngestionConfig()
     data_validation_config = DataValidationConfig()
     data_transformation_config = DataTransformationConfig()

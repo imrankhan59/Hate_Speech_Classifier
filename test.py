@@ -1,12 +1,16 @@
-import mlflow
-from src.utils.utils import setup_mlflow
+    data_ingestion_config = DataIngestionConfig()
+    data_validation_config = DataValidationConfig()
+    data_transformation_config = DataTransformationConfig()
+    model_trainer_config = ModelTrainerConfig()
 
-setup_mlflow()
+    data_ingestion = DataIngestion(data_ingestion_config=data_ingestion_config)
+    data_ingestion_artifact = data_ingestion.initiate_data_ingestion()
 
-print(mlflow.is_tracking_uri_set())
+    data_validation = DataValidation(data_ingestion_artifact=data_ingestion_artifact, data_validation_config=data_validation_config)
+    data_validation_artifact = data_validation.initiate_data_validation()
 
-with mlflow.start_run(run_name="test_run"):
-    mlflow.log_param("param1", 5)
-    mlflow.log_metric("foo", 2)
-    mlflow.log_metric("foo", 3)
-    mlflow.log_metric("foo", 4)
+    data_transformation = DataTransformation(data_ingestion_artifact = data_ingestion_artifact, data_validation_artifact = data_validation_artifact, data_transformation_config = data_transformation_config)
+    data_transformation_artifact = data_transformation.initiate_data_transformation()
+
+    model_trainer = ModelTrainer(data_transformation_artifact = data_transformation_artifact, model_trainer_config = model_trainer_config)
+    model_trainer.initiate_model_trainer()

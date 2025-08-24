@@ -41,3 +41,12 @@ stages:
       - artifacts/ModelTrainerArtifacts/x_train.csv
       - artifacts/ModelTrainerArtifacts/y_test.csv
       - tokenizer.pickle
+
+  model_evaluation:
+    cmd: python src/components/model_evaluation.py
+    deps:
+      - src/components/model_evaluation.py
+      - artifacts/ModelTrainerArtifacts/model.h5
+      - artifacts/ModelTrainerArtifacts/x_test.csv
+      - artifacts/ModelTrainerArtifacts/y_test.csv
+      - tokenizer.pickle

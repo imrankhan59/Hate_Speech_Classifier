@@ -61,4 +61,6 @@ MODEL_EVALUATION_ARTIFACT_DIR = "ModelEvaluationArtifacts"
 BEST_MODEL_DIR = "best_model"
 MODEL_EVALUATION_FILE_NAME = "loss.csv"
 
+PROD_MODEL_NAME = "model"
+NEW_MODEL_NAME = "LSTM"
 
