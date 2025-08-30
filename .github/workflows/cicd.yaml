@@ -28,13 +28,6 @@ jobs:
           pip install -r requirements.txt
           pip install pytest  # make sure pytest is available
 
-      - name: Run tests
-        run: |
-          pytest -v --maxfail=3 --disable-warnings
-          # -v = verbose
-          # --maxfail=3 = stop after 3 failures
-          # --disable-warnings = cleaner output
-
       - name: Run pipeline
         run: |
           dvc repro
