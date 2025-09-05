@@ -27,10 +27,6 @@ stages:
       hash: md5
       md5: b037c87e7281dfc871523fcf179bbcee
       size: 2433325
-    - path: src/components/data_ingestion.py
-      hash: md5
-      md5: ec3260cb0896978c5090df4f09f6f29c
-      size: 3025
     - path: src/components/data_validation.py
       hash: md5
       md5: e40f328e7f1f6177e93ca57547e15205
@@ -55,20 +51,12 @@ stages:
       hash: md5
       md5: 99331b3048e08f99293bd544625e1443
       size: 14
-    - path: src/components/data_ingestion.py
-      hash: md5
-      md5: ec3260cb0896978c5090df4f09f6f29c
-      size: 3025
     - path: src/components/data_transformation.py
       hash: md5
       md5: 14bde816a3065ba7d4a3a4eb4220de1c
       size: 7992
-    - path: src/components/data_validation.py
-      hash: md5
-      md5: e40f328e7f1f6177e93ca57547e15205
-      size: 3635
     outs:
-    - path: artifacts\DataTransformationArtifacts\transformed_data.csv
+    - path: artifacts/DataTransformationArtifacts/transformed_data.csv
       hash: md5
       md5: d1a0d2e5e08af421162b17d7f22af658
       size: 3469555
@@ -81,12 +69,12 @@ stages:
       size: 3469555
     - path: src/components/model_trainer.py
       hash: md5
-      md5: 88beca664a29b4b1ab97ecba42daea3a
-      size: 8961
+      md5: 14dd03de735db8f4c6179581f7197d60
+      size: 9361
     outs:
     - path: artifacts/ModelTrainerArtifacts/model.h5
       hash: md5
-      md5: 298bd2d7b31afd688fbd949e0915722d
+      md5: a57fa93a16948c976ca10f54774ea039
       size: 52686488
     - path: artifacts/ModelTrainerArtifacts/x_test.csv
       hash: md5
@@ -102,14 +90,14 @@ stages:
       size: 99887
     - path: tokenizer.pickle
       hash: md5
-      md5: 07c0b6875a6012986da5d7a888ef82c2
+      md5: 419d68e3e31f8bd8163dfcca50e8dc29
       size: 2249923
   model_evaluation:
     cmd: python src/components/model_evaluation.py
     deps:
     - path: artifacts/ModelTrainerArtifacts/model.h5
       hash: md5
-      md5: 298bd2d7b31afd688fbd949e0915722d
+      md5: a57fa93a16948c976ca10f54774ea039
       size: 52686488
     - path: artifacts/ModelTrainerArtifacts/x_test.csv
       hash: md5
@@ -121,9 +109,14 @@ stages:
       size: 99887
     - path: src/components/model_evaluation.py
       hash: md5
-      md5: f14c63258247078dca1d6ef931b895fa
-      size: 9131
+      md5: 378a48bb7185b182f1d3dc3a9b68abfd
+      size: 8819
     - path: tokenizer.pickle
       hash: md5
-      md5: 07c0b6875a6012986da5d7a888ef82c2
+      md5: 419d68e3e31f8bd8163dfcca50e8dc29
       size: 2249923
+    outs:
+    - path: artifacts/ModelEvaluationArtifacts/metrics.json
+      hash: md5
+      md5: 865b0ca500dc9a582ebb3658b49fd70c
+      size: 216

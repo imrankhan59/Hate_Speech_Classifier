@@ -40,26 +40,12 @@ X_TEST_FILE_NAME = "x_test.csv"
 Y_TEST_FILE_NAME = "y_test.csv"
 X_TRAIN_FILE_NAME = "x_train.csv"
 
-RANDOM_STATE = 42
-TEST_SIZE = 0.2
-EPOCH = 1
-BATCH_SIZE = 128
-VALIDATION_SPLIT = 0.2
-
-# Model Architecture constant
-
-MAX_WORD = 50000
-MAX_LEN = 300
-LOSS = "binary_crossentrophy"
-METRICS = ["accuracy"]
-ACTIVATION = "sigmoid"
 
 
-# Model Evaluation Constant
+
 
 MODEL_EVALUATION_ARTIFACT_DIR = "ModelEvaluationArtifacts"
-BEST_MODEL_DIR = "best_model"
-MODEL_EVALUATION_FILE_NAME = "loss.csv"
+METRICS = "metrics.json"
 
 PROD_MODEL_NAME = "LSTM"
 NEW_MODEL_NAME = "LSTM"

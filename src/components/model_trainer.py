@@ -22,13 +22,14 @@ from src.components.data_ingestion import DataIngestion
 from src.components.data_validation import DataValidation
 from src.components.data_transformation import DataTransformation
 from src.ml.model import ModelArchitecture
-from src.utils.utils import setup_mlflow
+from src.utils.utils import setup_mlflow, read_params
 
 class ModelTrainer:
     def __init__(self, data_transformation_artifact: DataTransformationArtifact,
                  model_trainer_config: ModelTrainerConfig):
         self.data_transformation_artifact = data_transformation_artifact
         self.model_trainer_config = model_trainer_config
+        self.params = read_params()
 
     def spliting_data(self, csv_path):
         try:
@@ -45,7 +46,7 @@ class ModelTrainer:
             y = df[LABEL]
 
             logging.info("Applying train_test_split on the data")
-            X_train, X_test, Y_train, Y_test = train_test_split(x, y, test_size = TEST_SIZE, random_state = RANDOM_STATE)
+            X_train, X_test, Y_train, Y_test = train_test_split(x, y, test_size = self.params['data']['test_size'], random_state = self.params['data']['random_state'])
 
             logging.info(":::-------------------------------------------------------------->")
 
@@ -60,14 +61,14 @@ class ModelTrainer:
     def tokanizing(self, X_train):
         try:
             logging.info("Entered tokenization method applying on the data:")
-            tokenizer = Tokenizer(num_words = MAX_WORD , oov_token="<OOV>")
+            tokenizer = Tokenizer(num_words = self.params['model']['max_words'] , oov_token="<OOV>")
             X_train = X_train.fillna("").astype(str)
             tokenizer.fit_on_texts(X_train)
             train_sequences = tokenizer.texts_to_sequences(X_train)
 
             logging.info(f"Converting text to sequences {train_sequences}")
 
-            train_padded = pad_sequences(train_sequences, maxlen = MAX_LEN)
+            train_padded = pad_sequences(train_sequences, maxlen = self.params['model']['max_len'])
 
             return train_padded, tokenizer
         except Exception as e:
@@ -121,16 +122,16 @@ class ModelTrainer:
                 logging.info(f"MLflow run_id: {run_id}")
 
             # Log hyperparameters
-                mlflow.log_param("test_size", TEST_SIZE)
-                mlflow.log_param("random_state", RANDOM_STATE)
-                mlflow.log_param("epochs", EPOCH)
-                mlflow.log_param("batch_size", BATCH_SIZE)
-                mlflow.log_param("max_words", MAX_WORD)
-                mlflow.log_param("max_len", MAX_LEN)
+                mlflow.log_param("test_size", self.params['data']['test_size'])
+                mlflow.log_param("random_state", self.params['data']['random_state'])
+                mlflow.log_param("epochs", self.params['model']['epochs'])
+                mlflow.log_param("batch_size", self.params['model']['batch_size'])
+                mlflow.log_param("max_words", self.params['model']['max_words'])
+                mlflow.log_param("max_len", self.params['model']['max_len'])
 
                 logging.info("Entered into model training")
 
-                history = model.fit(padded_sequence, Y_train, epochs = EPOCH, batch_size = BATCH_SIZE, validation_split = VALIDATION_SPLIT)
+                history = model.fit(padded_sequence, Y_train, epochs = self.params['model']['epochs'], batch_size = self.params['model']['batch_size'], validation_split = self.params['model']['validation_split'], verbose = 1)
                 logging.info("Model training finished:")
 
                 mlflow.keras.log_model(model, artifact_path="model")
@@ -140,7 +141,7 @@ class ModelTrainer:
                     f.write(run_id)
                 mlflow.log_artifact(last_run_id_file, artifact_path="artifacts")
 
-                for epoch in range(EPOCH):
+                for epoch in range(self.params['model']['epochs']):
                     mlflow.log_metric("train_loss", history.history["loss"][epoch])
                     mlflow.log_metric("train_accuracy", history.history["accuracy"][epoch])
                     mlflow.log_metric("val_loss", history.history["val_loss"][epoch])

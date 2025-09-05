@@ -5,3 +5,5 @@ artifacts/*
 !artifacts/*.dvc
 logs
 /tokenizer.pickle
+dvc.json
+.env

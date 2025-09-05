@@ -1,4 +1,4 @@
 [core]
-    remote = myremote
-['remote "myremote"']
-    url = gdrive://1BBN2F2KE0JZu72YOz2WgLYVXGnKw202X
+    remote = dagshub
+['remote "dagshub"']
+    url = https://dagshub.com/imrankhan59/Hate_Speech_Classifier.dvc

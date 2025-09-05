@@ -26,7 +26,7 @@ stages:
      - artifacts/DataValidationArtifacts/data_validation_report.yaml
 
     outs:
-     - artifacts\DataTransformationArtifacts\transformed_data.csv
+     - artifacts/DataTransformationArtifacts/transformed_data.csv
 
   
   model_trainer:
@@ -50,3 +50,6 @@ stages:
       - artifacts/ModelTrainerArtifacts/x_test.csv
       - artifacts/ModelTrainerArtifacts/y_test.csv
       - tokenizer.pickle
+
+    metrics:
+      - artifacts/ModelEvaluationArtifacts/metrics.json

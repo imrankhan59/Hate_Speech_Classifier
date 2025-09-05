@@ -1,5 +1,6 @@
 import os
 import sys 
+import json
 import pickle
 import numpy as np
 import pandas as pd
@@ -16,7 +17,7 @@ from src.entity.artifact_entity import DataIngestionArtifact, DataValidationArti
 from src.configuration.gcloud_syncer import GCloudSyncer
 from src.constant import *
 from src.ml import model
-from src.utils.utils import setup_mlflow
+from src.utils.utils import setup_mlflow, read_params
 
 from src.components.data_ingestion import DataIngestion
 from src.components.data_validation import DataValidation
@@ -33,6 +34,7 @@ class ModelEvaluation:
                  model_trainer_artifacts: ModelTrainerArtifact):
         self.model_evaluation_config = model_evaluation_config
         self.model_trainer_artifacts = model_trainer_artifacts
+        self.params = read_params()
 
         
     def evaluation(self, model, tokenizer):
@@ -49,7 +51,7 @@ class ModelEvaluation:
             x_test = x_test.fillna("").astype(str)
 
             test_sequences = tokenizer.texts_to_sequences(x_test)
-            test_sequences_padded = pad_sequences(test_sequences, maxlen = MAX_LEN)
+            test_sequences_padded = pad_sequences(test_sequences, maxlen = self.params['model']['max_len'])
 
             loss, accuracy = model.evaluate(test_sequences_padded, y_test)
 
@@ -99,7 +101,7 @@ class ModelEvaluation:
             with mlflow.start_run(run_name = "model evauation" , nested=True) as run:
 
                 #trained_model = keras.models.load_model(self.model_trainer_artifacts.train_model_path)
-                os.makedirs(self.model_evaluation_config.BEST_MODEL_PATH_DIR, exist_ok=True)
+                os.makedirs(self.model_evaluation_config.MODEL_EVALUATION_DIR, exist_ok=True)
 
                 with open("artifacts/ModelTrainerArtifacts/last_run_id.txt", "r") as f:
                         run_id = f.read().strip()
@@ -113,6 +115,9 @@ class ModelEvaluation:
                     tokenizer = pickle.load(f)
 
                 trained_metrices = self.evaluation(trained_model, tokenizer)
+                with open(model_evaluation_config.METRICS_FILE_PATH, "w") as f:
+                    json.dump(trained_metrices, f, indent=4)
+
                 mlflow.log_metrics(trained_metrices)
                 logging.info(f"Trained Model accuracy {trained_metrices}")
 
@@ -122,57 +127,46 @@ class ModelEvaluation:
                 client = MlflowClient()
 
                 try:
-                    prod_versions = client.get_latest_versions(name=PROD_MODEL_NAME, stages=["Production"])
-                    if len(prod_versions) == 0:
-                        prod_model = None
-                    else:
-                        prod_version = prod_versions[0].version
-                        prod_model_uri = f"models:/{PROD_MODEL_NAME}/Production"
-                        prod_model = mlflow.keras.load_model(prod_model_uri)
-                except RestException as e:
-                    if "RESOURCE_DOES_NOT_EXIST" in str(e):
-                        logging.info("No Production model registered yet.")
-                        prod_model = None
-                    else:
-                         raise e
+                    prod_model_uri = f"models:/{PROD_MODEL_NAME}@production"
+                    prod_model = mlflow.keras.load_model(prod_model_uri)
+                    logging.info("Found existing Production model.")
+                except Exception:
+                    logging.info("No Production model registered yet.")
+                    prod_model = None
 
                 # Case 1: No production model yet
-            if prod_model is None:
-                logging.info("Promoting trained model to Production since no Production model exists.")
-                client.transition_model_version_stage(
-                    name=NEW_MODEL_NAME,
-                    version=model_details.version,
-                    stage="Production"
+                if prod_model is None:
+                    logging.info("Promoting trained model to Production since no Production model exists.")
+                    client.set_registered_model_alias(
+                        name=NEW_MODEL_NAME,
+                        alias="production",
+                        version=model_details.version
                 )
-                is_model_accepted = True
+
+                    is_model_accepted = True
 
             # ---------------- Case 2: Production model exists ----------------
-            else:
-                prod_metrics = self.evaluation(prod_model, tokenizer)
-                logging.info(f"Production Model metrics: {prod_metrics}")
-
-                if trained_metrices["accuracy"] > prod_metrics["accuracy"]:
-                    logging.info("Trained model outperforms Production. Promoting to Production.")
-                    client.transition_model_version_stage(
-                        name=NEW_MODEL_NAME,
-                        version=model_details.version,
-                        stage="Production"
-                    )
-                    # Archive old production version
-                    client.transition_model_version_stage(
-                        name=PROD_MODEL_NAME,
-                        version=prod_version,
-                        stage="Archived"
-                    )
-                    is_model_accepted = True  
                 else:
-                    logging.info("Production model is better. Moving trained model to Staging.")
-                    client.transition_model_version_stage(
-                        name=NEW_MODEL_NAME,
-                        version=model_details.version,
-                        stage="Staging"
-                    )
-                    is_model_accepted = False                                  
+                    prod_metrics = self.evaluation(prod_model, tokenizer)
+                    logging.info(f"Production Model metrics: {prod_metrics}")
+
+                    if trained_metrices["accuracy"] > prod_metrics["accuracy"]:
+                        logging.info("Trained model outperforms Production. Promoting to Production.")
+                        client.set_registered_model_alias(
+                            name=NEW_MODEL_NAME,
+                            alias="production",
+                            version=model_details.version
+                        )
+                        is_model_accepted = True
+ 
+                    else:
+                        logging.info("Production model is better. Moving trained model to Staging.")
+                        client.set_registered_model_alias(
+                            name=NEW_MODEL_NAME,
+                            alias = "stagging",
+                            version=model_details.version
+                        )
+                        is_model_accepted = False                                  
 
                 model_evaluation_artifacts = ModelEvaluationArtifact(is_model_accepted = is_model_accepted)
                 return model_evaluation_artifacts

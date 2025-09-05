@@ -12,5 +12,6 @@ fastapi
 uvicorn
 Jinja2
 dvc
+dvc[gdrive]
 mlflow
 -e .
