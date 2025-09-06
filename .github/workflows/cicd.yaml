@@ -26,8 +26,19 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
-          pip install pytest  # make sure pytest is available
+          pip install pytest dvc[s3]  # install DVC + S3 support (Dagshub uses S3 backend)
+
+      # ✅ Configure DVC remote credentials (stored in GitHub Secrets)
+      - name: Configure DVC remote
+        run: |
+          dvc remote modify dagshub --local auth basic
+          dvc remote modify dagshub --local user ${{ secrets.DAGSHUB_USERNAME }}
+          dvc remote modify dagshub --local password ${{ secrets.DAGSHUB_TOKEN }}
+
+      # ✅ Pull data from Dagshub before running pipeline
+      - name: Pull data from DVC remote
+        run: dvc pull -v
 
       - name: Run pipeline
-        run: |
-          dvc repro
+        run: dvc repro
+
