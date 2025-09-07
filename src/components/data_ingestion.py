@@ -22,7 +22,7 @@ class DataIngestion:
             imb_artifact = self.data_ingestion_config.IMBALANCE_ARTIFACT_DIR
 
             # ✅ Step 1: if artifacts already exist (from DVC pull), use them
-            if os.path.exists(raw_artifact) and os.path.exists(imb_artifact):
+            if os.path.exists("artifacts/DataIngestionArtifacts/raw_data.csv") and os.path.exists("artifacts/DataIngestionArtifacts/imb_data.csv"):
                 logging.info("Found raw and imbalance artifacts in workspace (DVC pull). Skipping ingestion.")
                 return imb_artifact, raw_artifact
 
