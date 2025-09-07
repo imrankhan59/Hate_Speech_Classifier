@@ -22,6 +22,7 @@ class DataIngestion:
             print(f"Files in current folder: {os.listdir('.')}")
             raw_artifact = os.path.join(self.data_ingestion_config.DATA_INGESTION_ARTIFACT_DIR, "raw_data.csv")
             imb_artifact = os.path.join(self.data_ingestion_config.DATA_INGESTION_ARTIFACT_DIR, "imb_data.csv")
+            os.system("ls -la artifacts/DataIngestionArtifacts/") 
 
             # ✅ Step 1: if artifacts already exist (from DVC pull), use them
             if os.path.exists(imb_artifact) and os.path.exists(raw_artifact):
