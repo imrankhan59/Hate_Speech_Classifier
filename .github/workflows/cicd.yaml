@@ -37,10 +37,11 @@ jobs:
 
       # ✅ Pull data from Dagshub before running pipeline
       - name: Pull data from DVC remote
-        run: dvc pull -v
+        run: |
+          dvc pull -v
+          dvc checkout
 
       - name: Run pipeline
         run: |
           dvc repro
-          dvc Checkout
 
