@@ -40,5 +40,7 @@ jobs:
         run: dvc pull -v
 
       - name: Run pipeline
-        run: dvc repro
+        run: |
+          dvc repro
+          dvc Checkout
 
