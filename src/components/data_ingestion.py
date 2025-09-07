@@ -18,11 +18,11 @@ class DataIngestion:
     def load_data(self):
         logging.info("Entering the load_data function of DataIngestion class")
         try:
-            raw_artifact = self.data_ingestion_config.RAW_ARTIFACT_DIR
-            imb_artifact = self.data_ingestion_config.IMBALANCE_ARTIFACT_DIR
+            raw_artifact = "artifacts/DataIngestionArtifacts/raw_data.csv"
+            imb_artifact = "artifacts/DataIngestionArtifacts/imb_data.csv"
 
             # ✅ Step 1: if artifacts already exist (from DVC pull), use them
-            if os.path.exists("artifacts/DataIngestionArtifacts/raw_data.csv") and os.path.exists("artifacts/DataIngestionArtifacts/imb_data.csv"):
+            if os.path.exists(imb_artifact) and os.path.exists(raw_artifact):
                 logging.info("Found raw and imbalance artifacts in workspace (DVC pull). Skipping ingestion.")
                 return imb_artifact, raw_artifact
 

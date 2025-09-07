@@ -5,8 +5,8 @@ stages:
     deps:
     - path: src/components/data_ingestion.py
       hash: md5
-      md5: c7dd5c58cb9a4db2eea870970f4777f6
-      size: 3101
+      md5: 913747f7bd63e117f42acd085a61a3bd
+      size: 3033
     outs:
     - path: artifacts/DataIngestionArtifacts/imb_data.csv
       hash: md5
