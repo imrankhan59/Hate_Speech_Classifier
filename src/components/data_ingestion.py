@@ -18,8 +18,10 @@ class DataIngestion:
     def load_data(self):
         logging.info("Entering the load_data function of DataIngestion class")
         try:
-            raw_artifact = "artifacts/DataIngestionArtifacts/raw_data.csv"
-            imb_artifact = "artifacts/DataIngestionArtifacts/imb_data.csv"
+            print(f"I am running from: {os.getcwd()}")  # Add this line
+            print(f"Files in current folder: {os.listdir('.')}")
+            raw_artifact = os.path.join(self.data_ingestion_config.DATA_INGESTION_ARTIFACT_DIR, "raw_data.csv")
+            imb_artifact = os.path.join(self.data_ingestion_config.DATA_INGESTION_ARTIFACT_DIR, "imb_data.csv")
 
             # ✅ Step 1: if artifacts already exist (from DVC pull), use them
             if os.path.exists(imb_artifact) and os.path.exists(raw_artifact):
