@@ -18,18 +18,23 @@ class DataIngestion:
     def load_data(self):
         logging.info("Entering the load_data function of DataIngestion class")
         try:
-            #  Check if data already exists (DVC pull may have restored it)
+            #  Step 1: if data already exists (from DVC pull), skip ingestion
             if os.path.exists(self.data_ingestion_config.RAW_ARTIFACT_DIR) and \
-               os.path.exists(self.data_ingestion_config.IMBALANCE_ARTIFACT_DIR):
-                logging.info("Raw data and imbalance data already exist. Skipping ingestion.")
+            os.path.exists(self.data_ingestion_config.IMBALANCE_ARTIFACT_DIR):
+                logging.info("Raw and imbalance data already exist (probably from DVC pull). Skipping ingestion.")
                 return (
                     self.data_ingestion_config.IMBALANCE_ARTIFACT_DIR,
                     self.data_ingestion_config.RAW_ARTIFACT_DIR
                 )
 
-            logging.info("Data not found locally. Reading from local source paths...")
+            #  Step 2: else, try to fetch from your local paths
+            logging.info("Artifact files not found, reading from local source paths...")
+            
+            if not os.path.exists(RAW_DATA_PATH) or not os.path.exists(IMB_DATA_PATH):
+                raise FileNotFoundError(
+                    f"Source data not found. RAW_DATA_PATH={RAW_DATA_PATH}, IMB_DATA_PATH={IMB_DATA_PATH}"
+                )
 
-            # Read from source CSVs (your local desktop paths defined in constants)
             raw_data = pd.read_csv(RAW_DATA_PATH)
             imb_data = pd.read_csv(IMB_DATA_PATH)
 
@@ -43,6 +48,7 @@ class DataIngestion:
             )
         except Exception as e:
             raise CustomException(e, sys)
+
 
     def initiate_data_ingestion(self) -> DataIngestionArtifact:
         logging.info("Entered the initiate_data_ingestion method inside DataIngestion class")
