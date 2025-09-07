@@ -1,4 +1,4 @@
-name: CICD Pipeline
+name: Continous Integration Pipeline
 
 on: push
 
