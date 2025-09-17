@@ -9,11 +9,10 @@ TWEET = "tweet"  # column name
 
 # Data Ingestion Constants
 DATA_INGESTION_ARTIFACTS = "DataIngestionArtifacts"
-IMB_DATA_PATH = "C:\\Users\\HP\\Desktop\\dataset\\imbalanced_data.csv"
-RAW_DATA_PATH = "C:\\Users\\HP\\Desktop\\dataset\\raw_data4.csv"
+DB_NAME = "NLP"
+COLLECTION_NAME = "NLP_DATA"
 IMB_DATA_FILENAME = "imb_data.csv"
 RAW_DATA_FILENAME = "raw_data.csv"
-
 
 
 # Data Validation Constants

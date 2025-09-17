@@ -14,4 +14,5 @@ Jinja2
 dvc
 dvc[gdrive]
 mlflow
+pymongo
 -e .

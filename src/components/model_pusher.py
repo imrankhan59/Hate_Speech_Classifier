@@ -2,7 +2,7 @@ import sys
 from src.logger import logging
 from src.exception import CustomException
 
-from src.configuration.gcloud_syncer import GCloudSyncer
+from src.configuration.mongodb_conn import GCloudSyncer
 from src.entity.config_entity import ModelPusherConfig
 from src.entity.artifact_entity import ModelPusherArtifact
 

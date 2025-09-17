@@ -14,7 +14,7 @@ from src.logger import logging
 from src.exception import CustomException
 from src.entity.config_entity import DataIngestionConfig, DataValidationConfig, DataTransformationConfig, ModelEvaluationConfig, ModelTrainerConfig
 from src.entity.artifact_entity import DataIngestionArtifact, DataValidationArtifact, DataTransformationArtifact, ModelEvaluationArtifact, ModelTrainerArtifact
-from src.configuration.gcloud_syncer import GCloudSyncer
+
 from src.constant import *
 from src.ml import model
 from src.utils.utils import setup_mlflow, read_params
