@@ -26,7 +26,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
-          pip install pytest dvc[s3]
+          pip install pytest dvc
 
       - name: Run tests
         run: pytest -q --disable-warnings || true
@@ -38,11 +38,10 @@ jobs:
           dvc remote modify dagshub --local password ${{ secrets.DAGSHUB_TOKEN }}
 
       - name: Pull data from DVC remote
-        run: |
-          dvc pull -v
-          dvc checkout
+        run: dvc pull -v
 
       - name: Run pipeline
         run: dvc repro -v
+
 
 
