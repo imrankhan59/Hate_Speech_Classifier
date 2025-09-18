@@ -7,3 +7,5 @@ logs
 /tokenizer.pickle
 dvc.json
 .env
+!*.dvc
+!dvc.lock
