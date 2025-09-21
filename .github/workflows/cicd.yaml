@@ -38,7 +38,9 @@ jobs:
           dvc remote modify dagshub --local password ${{ secrets.DAGSHUB_TOKEN }}
 
       - name: Pull data from DVC remote
-        run: dvc pull -v
+        run: |
+          dvc pull -v
+          dvc Checkout
 
       - name: Run pipeline
         run: dvc repro -v

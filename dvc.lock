@@ -1,21 +1,5 @@
 schema: '2.0'
 stages:
-  data_ingestion:
-    cmd: python src/components/data_ingestion.py
-    deps:
-    - path: src/components/data_ingestion.py
-      hash: md5
-      md5: 4ccdc050df78e0658ec5fb621dbaaaa6
-      size: 2856
-    outs:
-    - path: artifacts/DataIngestionArtifacts/imb_data.csv
-      hash: md5
-      md5: 50c0df6093dab2487c21954e0df49a3d
-      size: 3135128
-    - path: artifacts/DataIngestionArtifacts/raw_data.csv
-      hash: md5
-      md5: 6ac97bca4efbcac959ef159dc6e105ba
-      size: 2433063
   data_validation:
     cmd: python src/components/data_validation.py
     deps:
@@ -74,7 +58,7 @@ stages:
     outs:
     - path: artifacts/ModelTrainerArtifacts/model.h5
       hash: md5
-      md5: c33a05b9eb83e658681e52fc978d747a
+      md5: 4922cc9a11d0a1a5cfcfd88f43e0e958
       size: 52686488
     - path: artifacts/ModelTrainerArtifacts/x_test.csv
       hash: md5
@@ -90,14 +74,14 @@ stages:
       size: 99887
     - path: tokenizer.pickle
       hash: md5
-      md5: 914d7d69864cdbdae951529f45e61051
+      md5: dee78073f2fd37135696d13cbc71e742
       size: 2253033
   model_evaluation:
     cmd: python src/components/model_evaluation.py
     deps:
     - path: artifacts/ModelTrainerArtifacts/model.h5
       hash: md5
-      md5: c33a05b9eb83e658681e52fc978d747a
+      md5: 4922cc9a11d0a1a5cfcfd88f43e0e958
       size: 52686488
     - path: artifacts/ModelTrainerArtifacts/x_test.csv
       hash: md5
@@ -113,10 +97,10 @@ stages:
       size: 8763
     - path: tokenizer.pickle
       hash: md5
-      md5: 914d7d69864cdbdae951529f45e61051
+      md5: dee78073f2fd37135696d13cbc71e742
       size: 2253033
     outs:
     - path: artifacts/ModelEvaluationArtifacts/metrics.json
       hash: md5
-      md5: 7665a287f47ea2ccdccc8effb7a53b24
-      size: 215
+      md5: 9b3dee6e1b1f77e7a8185408d77971b3
+      size: 216

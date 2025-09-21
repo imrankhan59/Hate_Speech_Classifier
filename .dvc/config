@@ -1,4 +1,4 @@
-[core]
-    remote = dagshub
 ['remote "dagshub"']
     url = https://dagshub.com/imrankhan59/Hate_Speech_Classifier.dvc
+    auth = basic
+    password = 5efee1b734842451f5de64a3d2010277eec655f7

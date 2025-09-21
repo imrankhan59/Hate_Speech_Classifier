@@ -2,8 +2,6 @@ import os
 from pathlib import Path
 from dataclasses import dataclass
 
-from src.constant import BUCKET_NAME
-
 @dataclass
 class DataIngestionArtifact:
     imbalance_data_file_path: str
