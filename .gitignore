@@ -1,10 +1,21 @@
 myenv
-mlruns
-mlartifacts
+# Ignore MLflow tracking directories
+mlruns/
+mlartifacts/
+
+# Ignore artifacts folder except DVC files (including subfolders)
 artifacts/*
-!artifacts/*.dvc
-logs
+!artifacts/
+!artifacts/DataIngestionArtifacts/
+!artifacts/**/*.dvc
+
+# Ignore logs
+logs/
+
+# Ignore specific files
 /tokenizer.pickle
 .env
+
+# Track all .dvc files and dvc.lock
 !*.dvc
 !dvc.lock
